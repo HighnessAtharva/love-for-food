@@ -69,12 +69,12 @@ class Order(models.Model):
         if self.total_data:
             total_data = json.loads(self.total_data)
             data = total_data.get(str(vendor.id))
-                 
+
             for key, val in data.items():
                 subtotal += float(key)
                 val = val.replace("'", '"') # value error dictionary has length 1 ; 2 is requires replace single quotation with double
                 val = json.loads(val)
-                tax_dict.update(val)
+                tax_dict |= val
 
                 # calculate tax
                 # {'Second-Tier-VAT': {'13.50': '2.63'}, 'Third-Tier-VAT': {'9.00': '1.76'}}
@@ -83,17 +83,11 @@ class Order(models.Model):
                         # print(val[i][j]) to print the value of the Second and Third Tier VAT 2.63 and 1.76
                         tax += float(val[i][j])
         grand_total = float(subtotal) + float(tax)
-        # print('subtotal==>', subtotal)
-        # print('tax==>', tax)
-        # print('tax_dict==>', tax_dict)
-        # print('grand_total==>', grand_total)
-        context = {
+        return {
             'subtotal': subtotal,
             'tax_dict': tax_dict,
             'grand_total': grand_total,
         }
-            
-        return context
 
 
     def __str__(self):

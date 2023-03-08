@@ -8,14 +8,11 @@ from django.conf import settings
 
 def detectUser(user):
     if user.role == 1:
-        redirectUrl = 'vendorDashboard'
-        return redirectUrl
+        return 'vendorDashboard'
     elif user.role == 2:
-        redirectUrl = 'custDashboard'
-        return redirectUrl
-    elif user.role == None and user.is_superadmin:
-        redirectUrl = '/admin'
-        return redirectUrl
+        return 'custDashboard'
+    elif user.role is None and user.is_superadmin:
+        return '/admin'
     
 
 def send_verification_email(request, user, mail_subject, email_template):
@@ -38,9 +35,8 @@ def send_notification(mail_subject, mail_template, context):
     from_email = settings.DEFAULT_FROM_EMAIL
     message = render_to_string(mail_template, context)
     # isinstance is used to check if the value is str type or not
-    if(isinstance(context['to_email'], str)):
-        to_email = []
-        to_email.append(context['to_email'])
+    if (isinstance(context['to_email'], str)):
+        to_email = [context['to_email']]
     else:
         to_email = context['to_email']
     mail = EmailMessage(mail_subject, message, from_email, to=to_email)

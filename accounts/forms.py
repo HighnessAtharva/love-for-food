@@ -33,7 +33,7 @@ class UserProfileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(UserProfileForm, self).__init__(*args, **kwargs)
         for field in self.fields:
-            if field == 'latitude' or field == 'longitude':
+            if field in ['latitude', 'longitude']:
                 self.fields[field].widget.attrs['readonly'] = 'readonly'
                 
                 

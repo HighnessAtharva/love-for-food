@@ -92,11 +92,11 @@ def registerVendor(request):
             vendor = v_form.save(commit=False)
             vendor.user = user
             vendor_name = v_form.cleaned_data['vendor_name']
-            vendor.vendor_slug = slugify(vendor_name)+'-'+str(user.id)
+            vendor.vendor_slug = f'{slugify(vendor_name)}-{str(user.id)}'
             user_profile = UserProfile.objects.get(user=user)
             vendor.user_profile = user_profile
             vendor.save()
-            
+
             # Send verification email
             mail_subject = 'Please activate your account'
             email_template = 'accounts/emails/account_verification_email.html'
@@ -106,11 +106,11 @@ def registerVendor(request):
         else:
             # print('invalid form')
             print(form.errors)
-        
+
     else:
         form = UserForm()
         v_form = VendorForm()
-    
+
     context = {
         'form': form,
         'v_form': v_form,
@@ -124,15 +124,15 @@ def activate(request, uidb64, token):
         user = User._default_manager.get(pk=uid)
     except(TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
-        
+
     if user is not None and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
         messages.success(request, 'Congratulation! Your account is activated.')
-        return redirect('myAccount')
     else:
         messages.error(request, 'Invalid activation link')
-        return redirect('myAccount')
+
+    return redirect('myAccount')
 
 def login(request):
     if request.user.is_authenticated:
@@ -184,18 +184,15 @@ def vendorDashboard(request):
     vendor = Vendor.objects.get(user=request.user)
     orders = Order.objects.filter(vendors__in=[vendor.id], is_ordered=True).order_by('-created_at')
     recent_orders = orders[:10]
-    
+
     # current month's revenue
     current_month = datetime.datetime.now().month
     current_month_orders = orders.filter(vendors__in=[vendor.id], created_at__month=current_month)
-    current_month_revenue = 0
-    for i in current_month_orders:
-        current_month_revenue += i.get_total_by_vendor()['grand_total']
+    current_month_revenue = sum(
+        i.get_total_by_vendor()['grand_total'] for i in current_month_orders
+    )
     print(current_month_revenue)
-    # total revenue
-    total_revenue = 0
-    for i in orders:
-        total_revenue += i.get_total_by_vendor()['grand_total']
+    total_revenue = sum(i.get_total_by_vendor()['grand_total'] for i in orders)
     context = {
         'orders': orders,
         'orders_count': orders.count(),

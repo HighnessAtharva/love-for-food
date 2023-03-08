@@ -55,11 +55,10 @@ class Vendor(models.Model):
                 if self.is_approved == True:
                     # Send notification email
                     mail_subject = "Congratulations! Your restaurant has been approved."
-                    send_notification(mail_subject, mail_template, context)
                 else:
                     # Send notification email    
-                    mail_subject = "We're sorry! You are not eligible for publishing your food menu on our marketplace"  
-                    send_notification(mail_subject, mail_template, context)    
+                    mail_subject = "We're sorry! You are not eligible for publishing your food menu on our marketplace"
+                send_notification(mail_subject, mail_template, context)
         return super(Vendor, self).save(*args, **kwargs)
     
 
@@ -72,7 +71,11 @@ DAYS = [(1, ("Monday")),
         (7, ("Sunday")),
         ]
 
-HOUR_OF_DAY_24 = [(time(h, m).strftime('%I:%M %p'), time(h, m).strftime('%I:%M %p')) for h in range(0, 24) for m in(0, 30)]
+HOUR_OF_DAY_24 = [
+    (time(h, m).strftime('%I:%M %p'), time(h, m).strftime('%I:%M %p'))
+    for h in range(24)
+    for m in (0, 30)
+]
 class OpeningHour(models.Model):
     vendor = models.ForeignKey(Vendor, on_delete=models.CASCADE)
     day = models.IntegerField(choices=DAYS)
